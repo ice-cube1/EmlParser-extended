@@ -2,6 +2,7 @@ import datetime
 import json
 import eml_parser
 import os
+import pandas as pd
 
 # I have no idea what this does. I copied it from the eml_parser pypi's site.
 def json_serial(obj):
@@ -12,14 +13,17 @@ def json_serial(obj):
     
 #Blank list in which we'll add our data
 adresses = []
+timestamps = []
+subjects = []
 
 #Folder in which we have our emails
-files = os.listdir("/path/to/your/.emls/")
+mail_folder = "./mail_folder/"
+files = os.listdir(mail_folder)
 
 #We iterate over every email
 for file in files:
 
-    with open("/path/to/your/.emls/"+file, 'rb') as fhdl:
+    with open(mail_folder+file, 'rb') as fhdl:
         raw_email = fhdl.read()
 
     #Decode the email
@@ -34,13 +38,12 @@ for file in files:
     try:
         print(dicc['header']['from'])
         adresses.append(dicc['header']['from'])
+        print(dicc['header']['date'])
+        timestamps.append(dicc['header']['date'])
+        print(dicc['header']['subject'])
+        subjects.append(dicc['header']['subject'])
     except:
         print("\n")
 
-#We turn our list into a dictionary and then back to a list to get rid of the duplicates
-adresses = list(dict.fromkeys(adresses))
-
-#Final output
-with open("/path/to/your/output.csv", 'w') as f:
-    for adress in adresses:
-        f.write(str(adresses)+"\n")
+df_books = pd.DataFrame({'Sender':adresses ,'Timestamp': timestamps, 'Subject': subjects})
+df_books.to_csv('exported_email_list.csv', index=False)
